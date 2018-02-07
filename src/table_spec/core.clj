@@ -2,6 +2,8 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.spec.alpha :as s]
             [clojure.set :as set]
+            [clojure.string :as str]
+            [clojure.edn :as edn]
             [clojure.spec.gen.alpha :as gen])
   (:import [java.sql Types]))
 
@@ -74,10 +76,33 @@
 (defmethod data-type Types/BOOLEAN [_]
   (s/spec boolean?))
 
+(s/def ::ip-address
+  (letfn [(pred [s]
+            (let [parts (str/split s #"\.")]
+              (and (= (count parts) 4)
+                   (every? (fn [part]
+                             (try
+                               (let [n (edn/read-string part)]
+                                 (and (integer? n)
+                                      (>= 256 n 0)))
+                               (catch Exception _ false)))
+                           parts))))
+          (gen []
+            (gen/fmap
+              (partial str/join ".") (gen/vector (gen/choose 0 255) 4)))]
+    (s/spec pred :gen gen)))
+
+
 (defmethod data-type Types/OTHER [{:keys [type_name] :as m}]
   (case type_name
     "uuid" (s/spec uuid?)
+    "inet" (s/spec ::ip-address)
     (throw (unknown-data-type-ex m))))
+
+
+
+
+
 
 (defmethod data-type :default [m]
   (throw (unknown-data-type-ex m)))
