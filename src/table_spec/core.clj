@@ -7,6 +7,24 @@
             [clojure.spec.gen.alpha :as gen])
   (:import [java.sql Types]))
 
+
+(extend-protocol clojure.java.jdbc/ISQLParameter
+  clojure.lang.IPersistentVector
+  (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
+    (let [conn (.getConnection stmt)
+          meta (.getParameterMetaData stmt)
+          type-name (.getParameterTypeName meta i)]
+      (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
+        (.setObject stmt i (.createArrayOf conn elem-type (to-array v)))
+        (.setObject stmt i v)))))
+
+(extend-protocol clojure.java.jdbc/IResultSetReadColumn
+  java.sql.Array
+  (result-set-read-column [val _ _]
+    (into [] (.getArray val))))
+
+
+
 (defmulti data-type :data_type)
 
 (defn unknown-data-type-ex [{:keys [data_type] :as m}]
@@ -75,6 +93,20 @@
 
 (defmethod data-type Types/BOOLEAN [_]
   (s/spec boolean?))
+(s/def ::int4 (s/int-in -2147483648 2147483647))
+
+(s/def ::int4-array (s/coll-of ::int4))
+
+(defmethod data-type 2003 [{:keys [type_name] :as m}]
+  (do
+    (println "------------------------got there")
+    (case type_name
+      "_int4"
+      (s/spec ::int4-array)
+      (throw (unknown-data-type-ex m)))))
+
+
+
 
 (s/def ::ip-address
   (letfn [(pred [s]
@@ -95,8 +127,9 @@
 
 (defmethod data-type Types/OTHER [{:keys [type_name] :as m}]
   (case type_name
-    "uuid" (s/spec uuid?)
-    "inet" (s/spec ::ip-address)
+    "uuid"  (s/spec uuid?)
+    "inet"  (s/spec ::ip-address)
+
     (throw (unknown-data-type-ex m))))
 
 

@@ -63,7 +63,8 @@
                                        text text,
                                        decimal decimal(6, 3),
                                        unique_id uuid,
-                                       ip_address inet)"]
+                                       ip_address inet,
+                                       colwidth   _int4)"]
                :down ["drop table foo"]
                :connection-uri connection-uri}
     (let [column_size 250
@@ -81,8 +82,12 @@
                                                        #(<= (.length %) column_size)))
                               :foo/decimal (s/spec decimal?)
                               :foo/unique_id (s/spec uuid?)
-                              :foo/ip_address (s/spec ::sut/ip-address)})]
+                              :foo/ip_address (s/spec ::sut/ip-address)
+                              :foo/colwidth (s/spec ::sut/int4-array)})]
+
+
       (is (s/valid? (:foo/name specs)
                     (String. (byte-array 250) "UTF-8")))
       (is (not (s/valid? (:foo/name specs)
                          (String. (byte-array 251) "UTF-8")))))))
+
