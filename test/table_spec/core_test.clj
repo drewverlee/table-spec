@@ -5,7 +5,7 @@
             [clojure.spec.alpha :as s]
             [table-spec.fixture :refer [with-db]]))
 
-(def connection-uri "jdbc:postgresql://localhost:5433/postgres?user=postgres&password=secret")
+(def connection-uri "jdbc:postgresql://localhost:5433/postgres?user=postgres&password=secret&stringtype=unspecified")
 #_(def connection-uri "jdbc:postgresql:test")
 
 (use-fixtures :once (partial with-db connection-uri))
@@ -32,6 +32,7 @@
            (map-value s/form specs)))
     (sut/register tables)
     (jdbc/with-db-connection [db {:connection-uri connection-uri}]
+
       (jdbc/insert-multi! db table-name (map first (s/exercise (keyword "table" table-name))))
       (is (= 10
              (jdbc/query db
