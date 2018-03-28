@@ -5,6 +5,8 @@
             [clojure.spec.alpha :as s]
             [table-spec.fixture :refer [with-db]]))
 
+(into-array String ["cow", "pig"])
+
 (def connection-uri "jdbc:postgresql://localhost:5433/postgres?user=postgres&password=secret&stringtype=unspecified")
 #_(def connection-uri "jdbc:postgresql:test")
 

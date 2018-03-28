@@ -8,27 +8,28 @@
   (:import [java.sql Types]))
 
 
-(extend-protocol clojure.java.jdbc/ISQLParameter
-  clojure.lang.IPersistentVector
-  (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
-    (let [conn (.getConnection stmt)
-          meta (.getParameterMetaData stmt)
-          type-name (.getParameterTypeName meta i)]
-      (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
-        (.setObject stmt i (.createArrayOf conn elem-type (to-array v)))
-        (.setObject stmt i v)))))
-
-(extend-protocol clojure.java.jdbc/IResultSetReadColumn
-  java.sql.Array
-  (result-set-read-column [val _ _]
-    (into [] (.getArray val))))
+;(extend-protocol clojure.java.jdbc/ISQLParameter
+;  clojure.lang.IPersistentVector
+;  (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
+;    (let [conn (.getConnection stmt)
+;          meta (.getParameterMetaData stmt)
+;          type-name (.getParameterTypeName meta i)]
+;      (if-let [elem-type (when (= (first type-name) \_) (apply str (rest type-name)))]
+;        (.setObject stmt i (.createArrayOf conn elem-type (to-array v)))
+;        (.setObject stmt i v)))))
+;
+;(extend-protocol clojure.java.jdbc/IResultSetReadColumn
+;  java.sql.Array
+;  (result-set-read-column [val _ _]
+;    (into [] (.getArray val))))
 
 
 
 (defmulti data-type :data_type)
 
 (defn unknown-data-type-ex [{:keys [data_type] :as m}]
-  (ex-info (str "Undefined data type: " data_type) m))
+  (println (str "Undefined data type: " data_type) m))
+  ;;(ex-info (str "Undefined data type: " data_type) m))
 
 ;; Numbers
 
@@ -100,10 +101,14 @@
 (defmethod data-type 2003 [{:keys [type_name] :as m}]
   (do
     (println "------------------------got there")
-    (case type_name
-      "_int4"
-      (s/spec ::int4-array)
-      (throw (unknown-data-type-ex m)))))
+    (println "error: " m)))
+    ;(case type_name
+    ;  "_int4"
+    ;  (s/spec ::int4-array)
+    ;  (println "error: " e))))
+
+
+      ;(throw (unknown-data-type-ex m)))))
 
 
 
@@ -129,8 +134,9 @@
   (case type_name
     "uuid"  (s/spec uuid?)
     "inet"  (s/spec ::ip-address)
+    (println "cant match: " m)))
 
-    (throw (unknown-data-type-ex m))))
+    ;(throw (unknown-data-type-ex m))))
 
 
 
@@ -138,7 +144,8 @@
 
 
 (defmethod data-type :default [m]
-  (throw (unknown-data-type-ex m)))
+  (println "undefined data type: " m))
+  ;(throw (unknown-data-type-ex m)))
 
 ;; End data type defs
 
