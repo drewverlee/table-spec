@@ -8,6 +8,10 @@
   (:import [java.sql Types]))
 
 
+(defn unknown-data-type-ex [{:keys [data_type] :as m}]
+  ;;(println (str "Undefined data type: " data_type) m))
+  (ex-info (str "Undefined data type: " data_type) m))
+
 (extend-protocol clojure.java.jdbc/ISQLParameter
   clojure.lang.IPersistentVector
   (set-parameter [v ^java.sql.PreparedStatement stmt ^long i]
@@ -27,9 +31,7 @@
 
 (defmulti data-type :data_type)
 
-(defn unknown-data-type-ex [{:keys [data_type] :as m}]
-  (println (str "Undefined data type: " data_type) m))
-  ;;(ex-info (str "Undefined data type: " data_type) m))
+
 
 ;; Numbers
 
@@ -99,14 +101,9 @@
 (s/def ::int4-array (s/coll-of ::int4))
 
 (defmethod data-type 2003 [{:keys [type_name] :as m}]
-  (do
-    (case type_name
-     "_int4" (s/spec ::int4-array)
-     (throw (unknown-data-type-ex m))
-     )))
-
-
-
+  (case type_name
+    "_int4" (s/spec ::int4-array)
+    (throw (unknown-data-type-ex m))))
 
 (s/def ::ip-address
   (letfn [(pred [s]
