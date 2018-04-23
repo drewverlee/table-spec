@@ -96,13 +96,18 @@
 
 (defmethod data-type Types/BOOLEAN [_]
   (s/spec boolean?))
+
 (s/def ::int4 (s/int-in -2147483648 2147483647))
 
 (s/def ::int4-array (s/coll-of ::int4))
 
+(s/def ::text (s/spec string?))
+(s/def ::text-array (s/coll-of ::text))
+
 (defmethod data-type 2003 [{:keys [type_name] :as m}]
   (case type_name
     "_int4" (s/spec ::int4-array)
+    "_text" (s/spec ::text-array)
     (throw (unknown-data-type-ex m))))
 
 (s/def ::ip-address
