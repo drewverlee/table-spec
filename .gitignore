@@ -11,3 +11,4 @@ pom.xml.asc
 .cpcache/
 *.swp
 *.iml
+test/table_spec/dev.clj
