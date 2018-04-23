@@ -5,13 +5,10 @@
             [clojure.spec.gen.alpha :as gen])
   (:import [java.sql Types]))
 
-(s/def ::timestamp
-  (s/spec #(instance? java.sql.Timestamp %)
-          :gen (fn []
-                 (gen/fmap #(java.sql.Timestamp. ^Long %)
-                           (gen/large-integer)))))
-
 (defmulti data-type :data_type)
+
+(defn unknown-data-type-ex [{:keys [data_type] :as m}]
+  (ex-info (str "Undefined data type: " data_type) m))
 
 ;; Numbers
 
@@ -42,6 +39,12 @@
 
 ;; Data and time
 
+(s/def ::timestamp
+  (s/spec #(instance? java.sql.Timestamp %)
+          :gen (fn []
+                 (gen/fmap #(java.sql.Timestamp. ^Long %)
+                           (gen/large-integer)))))
+
 (defmethod data-type Types/TIMESTAMP [_]
   (s/get-spec ::timestamp))
 
@@ -71,8 +74,15 @@
 (defmethod data-type Types/BOOLEAN [_]
   (s/spec boolean?))
 
+(defmethod data-type Types/OTHER [{:keys [type_name] :as m}]
+  (case type_name
+    "uuid" (s/spec uuid?)
+    (throw (unknown-data-type-ex m))))
+
 (defmethod data-type :default [m]
-  (throw (Exception. (str "Undefined data type: " (:data_type m)))))
+  (throw (unknown-data-type-ex m)))
+
+;; End data type defs
 
 (defn table-meta [md schema]
   (-> md
