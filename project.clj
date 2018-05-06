@@ -1,6 +1,6 @@
-(defproject viesti/table-spec "0.1.2-SNAPSHOT"
+(defproject drewverlee/table-spec "0.1.2-SNAPSHOT"
   :description "clojure.spec from SQL schema"
-  :url "http://github.com/viesti/table-spec"
+  :url "https://github.com/drewverlee/table-spec"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0"]

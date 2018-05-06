@@ -9,7 +9,6 @@
 
 
 (defn unknown-data-type-ex [{:keys [data_type] :as m}]
-  ;;(println (str "Undefined data type: " data_type) m))
   (ex-info (str "Undefined data type: " data_type) m))
 
 (extend-protocol clojure.java.jdbc/ISQLParameter
@@ -27,11 +26,7 @@
   (result-set-read-column [val _ _]
     (into [] (.getArray val))))
 
-
-
 (defmulti data-type :data_type)
-
-
 
 ;; Numbers
 
@@ -132,12 +127,6 @@
     "uuid"  (s/spec uuid?)
     "inet"  (s/spec ::ip-address)
     (println "cant match: " m)))
-
-    ;(throw (unknown-data-type-ex m))))
-
-
-
-
 
 
 (defmethod data-type :default [m]
