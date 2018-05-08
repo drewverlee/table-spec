@@ -1,4 +1,4 @@
-(defproject drewverlee/table-spec "0.1.2-SNAPSHOT"
+(defproject drewverlee/table-spec "0.1.3"
   :description "clojure.spec from SQL schema"
   :url "https://github.com/drewverlee/table-spec"
   :license {:name "Eclipse Public License"
